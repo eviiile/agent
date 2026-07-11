@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IGENT</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Tajawal', sans-serif;
+    background: #0a0a12;
+    color: #e8e8f0;
+    min-height: 100vh;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .stars-bg {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .star {
+    position: absolute;
+    background: #fff;
+    border-radius: 50%;
+    opacity: 0;
+    animation: twinkle var(--duration) ease-in-out infinite;
+    animation-delay: var(--delay);
+  }
+
+  @keyframes twinkle {
+    0%, 100% { opacity: 0; transform: scale(0.5); }
+    50% { opacity: var(--max-opacity); transform: scale(1.2); }
+  }
+
+  .shooting-star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,1));
+    border-radius: 50%;
+    opacity: 0;
+    animation: shoot var(--shoot-duration) linear infinite;
+    animation-delay: var(--shoot-delay);
+  }
+
+  @keyframes shoot {
+    0% { transform: translateY(100vh) translateX(0) scale(1); opacity: 1; }
+    100% { transform: translateY(-10vh) translateX(50px) scale(0.5); opacity: 0; }
+  }
+
+  .container {
+    position: relative;
+    z-index: 10;
+    text-align: center;
+    padding: 2rem;
+    width: 100%;
+    max-width: 600px;
+  }
+
+  .logo {
+    font-size: 5rem;
+    font-weight: 800;
+    letter-spacing: 8px;
+    background: linear-gradient(135deg, #a78bfa, #60a5fa, #34d399);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+
+  .tagline {
+    font-size: 1.2rem;
+    color: #8892b0;
+    font-weight: 300;
+    margin-bottom: 2.5rem;
+  }
+
+  .input-box {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 0.4rem 0.4rem 0.4rem 1rem;
+  }
+
+  .input-box textarea {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: #e8e8f0;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 1rem;
+    resize: none;
+    min-height: 44px;
+    max-height: 120px;
+    padding: 0.6rem 0;
+    line-height: 1.5;
+  }
+
+  .input-box textarea::placeholder {
+    color: #64748b;
+  }
+
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff;
+    transition: transform 0.2s, box-shadow 0.2s;
+    flex-shrink: 0;
+  }
+
+  .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+  }
+
+  .btn svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .footer {
+    position: fixed;
+    bottom: 1.5rem;
+    font-size: 0.75rem;
+    color: #475569;
+    z-index: 10;
+  }
+
+  @media (max-width: 640px) {
+    .logo { font-size: 3.2rem; letter-spacing: 4px; }
+    .tagline { font-size: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stars-bg" id="starsBg"></div>
+
+<div class="container">
+  <div class="logo">IGENT</div>
+  <div class="tagline">مساعدك الذكي للدردشة والإبداع</div>
+
+  <div class="input-box">
+    <textarea id="firstInput" rows="1" placeholder="اكتب رسالتك هنا..."></textarea>
+    <button class="btn" id="startBtn" title="إرسال">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"/>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<div class="footer">IGENT &copy; 2026 | T.me/sii_3</div>
+
+<script>
+  const starsBg = document.getElementById('starsBg');
+  const starCount = 120;
+
+  for (let i = 0; i < starCount; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    const size = Math.random() * 2.5 + 1;
+    star.style.width = size + 'px';
+    star.style.height = size + 'px';
+    star.style.left = Math.random() * 100 + '%';
+    star.style.top = Math.random() * 100 + '%';
+    star.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
+    star.style.setProperty('--delay', (Math.random() * 5) + 's');
+    star.style.setProperty('--max-opacity', Math.random() * 0.7 + 0.3);
+    starsBg.appendChild(star);
+  }
+
+  const shootCount = 8;
+  for (let i = 0; i < shootCount; i++) {
+    const s = document.createElement('div');
+    s.className = 'shooting-star';
+    s.style.left = Math.random() * 100 + '%';
+    s.style.setProperty('--shoot-duration', (Math.random() * 4 + 6) + 's');
+    s.style.setProperty('--shoot-delay', (Math.random() * 10) + 's');
+    starsBg.appendChild(s);
+  }
+
+  const firstInput = document.getElementById('firstInput');
+  const startBtn = document.getElementById('startBtn');
+
+  firstInput.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+  });
+
+  firstInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      goToChat();
+    }
+  });
+
+  startBtn.addEventListener('click', goToChat);
+
+  function goToChat() {
+    const text = firstInput.value.trim();
+    if (!text) return;
+    localStorage.setItem('igent_first_msg', text);
+    window.location.href = '/chat';
+  }
+</script>
+
+</body>
+</html>
