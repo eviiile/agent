@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>UFOQ – مكتبة البرومبتات</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+        :root {
+            --bg: #f8fafc;
+            --bg-card: #ffffff;
+            --border: rgba(0,0,0,0.08);
+            --text: #1e293b;
+            --text-dim: #475569;
+            --text-faint: #94a3b8;
+            --primary: #0ea5e9;
+            --primary-dim: rgba(14,165,233,0.08);
+            --primary-dark: #0284c7;
+            --shadow: 0 4px 20px rgba(0,0,0,0.06);
+            --shadow-lg: 0 8px 30px rgba(0,0,0,0.1);
+        }
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            min-height: 100dvh;
+            overflow-x: hidden;
+        }
+
+        /* Floating Header */
+        .floating-header {
+            position: fixed; top: 12px; left: 12px; right: 12px; z-index: 100;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 8px 16px; max-width: 700px; margin: 0 auto;
+            border-radius: 16px;
+            background: #fff;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+        .header-center {
+            position: absolute; left: 50%; transform: translateX(-50%);
+            font-size: 18px; font-weight: 900; letter-spacing: 2px; color: var(--text);
+        }
+        .header-btn {
+            width: 34px; height: 34px; border-radius: 8px;
+            background: #f1f5f9; border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--text-dim); transition: 0.2s;
+            text-decoration: none;
+        }
+        .header-btn:hover { background: var(--primary-dim); color: var(--primary); border-color: var(--primary); }
+        .header-btn i { font-size: 16px; }
+
+        /* Main content */
+        .main-content {
+            padding: 90px 16px 140px 16px;
+            max-width: 1400px; margin: 0 auto;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+
+        /* Hero */
+        .hero { text-align: center; padding: 32px 20px; }
+        .hero h1 { font-size: 2rem; font-weight: 900; margin-bottom: 6px; }
+        .hero h1 span { color: var(--primary); }
+        .hero p { font-size: 0.95rem; color: var(--text-dim); max-width: 500px; margin: 0 auto 16px; line-height: 1.7; }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: var(--primary-dim); border: 1px solid rgba(14,165,233,0.15);
+            padding: 6px 18px; border-radius: 50px; font-size: 0.85rem; color: var(--primary-dark);
+            font-weight: 700;
+        }
+
+        /* Search & Filter */
+        .search-bar {
+            display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
+            margin-bottom: 16px;
+        }
+        .search-bar input {
+            flex: 1; min-width: 200px;
+            padding: 10px 16px; border-radius: 8px;
+            background: #f1f5f9; border: 1px solid var(--border);
+            color: var(--text); font-family: 'Tajawal', sans-serif; font-size: 0.9rem;
+            outline: none; transition: 0.2s;
+        }
+        .search-bar input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px var(--primary-dim); }
+        .search-bar input::placeholder { color: var(--text-faint); }
+
+        .categories-scroll {
+            display: flex; gap: 8px; overflow-x: auto; padding: 4px 0; scrollbar-width: none;
+        }
+        .categories-scroll::-webkit-scrollbar { display: none; }
+        .category-btn {
+            flex-shrink: 0; padding: 6px 16px; border-radius: 8px;
+            background: transparent; border: 1px solid var(--border);
+            color: var(--text-dim); font-family: 'Tajawal', sans-serif;
+            font-weight: 600; font-size: 0.8rem; cursor: pointer;
+            transition: 0.2s; white-space: nowrap;
+        }
+        .category-btn:hover { background: var(--primary-dim); color: var(--primary); border-color: var(--primary); }
+        .category-btn.active {
+            background: var(--primary); color: #fff; border-color: var(--primary);
+            font-weight: 700;
+        }
+
+        /* Gallery grid */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        /* Prompt card */
+        .prompt-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px; overflow: hidden;
+            transition: all 0.3s ease;
+            display: flex; flex-direction: column;
+        }
+        .prompt-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary);
+            box-shadow: 0 8px 24px rgba(14,165,233,0.12);
+        }
+        .prompt-card .image-wrapper {
+            position: relative; overflow: hidden;
+            background: #f1f5f9;
+            display: flex; align-items: center; justify-content: center;
+            min-height: 180px;
+        }
+        .prompt-card .image-wrapper img {
+            width: 100%; height: auto; max-height: 350px; object-fit: contain; display: block;
+            transition: transform 0.4s ease;
+        }
+        .prompt-card:hover .image-wrapper img { transform: scale(1.03); }
+        .prompt-card .image-overlay {
+            position: absolute; inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        .prompt-card .image-title {
+            position: absolute; bottom: 12px; right: 12px;
+            color: #fff; font-weight: 800; font-size: 1rem;
+            pointer-events: none; z-index: 2;
+        }
+        .prompt-card .card-category {
+            position: absolute; top: 10px; left: 10px;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(10px);
+            padding: 4px 12px; border-radius: 6px;
+            font-size: 0.7rem; font-weight: 600; color: #fff;
+            border: 1px solid rgba(255,255,255,0.1);
+            z-index: 3;
+        }
+        .prompt-card .card-actions {
+            padding: 14px;
+            display: flex; gap: 8px; align-items: center;
+            flex-wrap: wrap;
+        }
+        .copy-btn, .like-btn {
+            padding: 8px 14px; border-radius: 8px;
+            border: none; font-weight: 700; cursor: pointer;
+            transition: 0.2s; font-family: 'Tajawal', sans-serif;
+            display: flex; align-items: center; gap: 6px;
+            font-size: 0.8rem;
+        }
+        .copy-btn {
+            flex: 1;
+            background: var(--primary); color: #fff;
+            box-shadow: 0 2px 6px rgba(14,165,233,0.25);
+        }
+        .copy-btn:hover { background: var(--primary-dark); transform: translateY(-1px); }
+        .copy-btn:active { transform: scale(0.97); }
+        .copy-btn.copied { background: #10b981; }
+        .like-btn {
+            background: transparent; border: 1px solid var(--border);
+            color: var(--text-dim);
+            padding: 8px 12px;
+            transition: 0.2s;
+        }
+        .like-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .like-btn.liked { background: rgba(239,68,68,0.08); border-color: #ef4444; color: #ef4444; }
+        .like-btn i { font-size: 1rem; }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center; padding: 60px 20px; grid-column: 1 / -1;
+            color: var(--text-faint);
+        }
+        .empty-state i { font-size: 48px; display: block; margin-bottom: 12px; opacity: 0.4; }
+
+        /* Toast */
+        .toast {
+            position: fixed; bottom: 100px; left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--text); color: #fff;
+            padding: 10px 22px; border-radius: 8px;
+            font-weight: 700; font-size: 0.85rem;
+            z-index: 2000; opacity: 0; transition: 0.3s;
+            display: flex; align-items: center; gap: 8px;
+            font-family: 'Tajawal', sans-serif;
+            box-shadow: var(--shadow-lg);
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* Ad overlay */
+        .ad-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(12px);
+            z-index: 5000; display: none; align-items: center; justify-content: center; padding: 20px;
+        }
+        .ad-overlay.show { display: flex; }
+        .ad-box {
+            background: #fff; border-radius: 16px; max-width: 400px; width: 100%;
+            border: 1px solid var(--border); overflow: hidden;
+            position: relative; box-shadow: var(--shadow-lg);
+        }
+        .ad-box img { width: 100%; height: 160px; object-fit: contain; display: block; background: #f1f5f9; }
+        .ad-no-image {
+            height: 140px; display: flex; align-items: center; justify-content: center;
+            color: var(--text-faint); font-size: 40px; background: #f1f5f9;
+        }
+        .ad-content { padding: 22px; text-align: center; }
+        .ad-title { font-size: 1.1rem; font-weight: 900; margin-bottom: 6px; color: var(--text); }
+        .ad-text { font-size: 0.85rem; color: var(--text-dim); line-height: 1.7; margin-bottom: 18px; }
+        .ad-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: var(--primary); color: #fff;
+            padding: 10px 24px; border-radius: 8px; text-decoration: none;
+            font-weight: 700; font-size: 0.85rem; border: none; cursor: pointer;
+            font-family: 'Tajawal', sans-serif; transition: 0.2s;
+            box-shadow: 0 2px 8px rgba(14,165,233,0.25);
+        }
+        .ad-btn:hover { background: var(--primary-dark); }
+        .ad-timer {
+            position: absolute; top: 10px; left: 10px;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(10px);
+            color: #fff; padding: 4px 12px; border-radius: 6px;
+            font-size: 12px; font-weight: 700;
+        }
+
+        /* Bottom nav */
+        .bottom-nav-bar {
+            position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+            z-index: 1000; display: flex; align-items: center; gap: 6px;
+            padding: 8px 16px; background: #fff;
+            border: 1px solid var(--border); border-radius: 50px;
+            box-shadow: var(--shadow-lg); max-width: 600px; width: auto;
+        }
+        .nav-item {
+            display: flex; align-items: center; gap: 6px;
+            padding: 8px 16px; border-radius: 40px;
+            background: transparent; border: none; color: var(--text-faint);
+            font-family: 'Tajawal', sans-serif; font-size: 13px; font-weight: 600;
+            cursor: pointer; transition: 0.2s; text-decoration: none;
+            white-space: nowrap;
+        }
+        .nav-item:hover { color: var(--text); background: var(--primary-dim); }
+        .nav-item.active {
+            background: var(--primary); color: #fff;
+        }
+        .nav-item i { font-size: 18px; }
+        .nav-label {
+            max-width: 0; overflow: hidden; transition: 0.2s; opacity: 0;
+        }
+        .nav-item.active .nav-label { max-width: 80px; opacity: 1; }
+
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.5rem; }
+            .gallery-grid { grid-template-columns: 1fr; gap: 16px; }
+            .bottom-nav-bar { padding: 6px 12px; max-width: 95vw; }
+            .nav-item { padding: 6px 12px; font-size: 12px; }
+            .nav-item i { font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating Header -->
+    <header class="floating-header" style="justify-content: center;">
+        <div class="header-center" style="position: static; transform: none;">UFOQ</div>
+    </header>
+
+    <div class="main-content">
+        <!-- Hero -->
+        <div class="card hero">
+            <h1>مرحباً بك في <span>UFOQ</span></h1>
+            <p>مكتبة ضخمة من البرومبتات الجاهزة للاستخدام – اختر، انسخ، وابدأ الإبداع فوراً.</p>
+            <div class="hero-badge"><i class="bi bi-stars"></i> أكثر من {{ library_items|length }} برومبت</div>
+        </div>
+
+        <!-- Search & Filter -->
+        <div class="card">
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="ابحث في البرومبتات (العنوان أو الكلمات المفتاحية)" oninput="filterPrompts()">
+            </div>
+            <div class="categories-scroll" id="categoriesContainer">
+                <button class="category-btn active" data-category="all">الكل</button>
+                {% for cat in categories %}
+                <button class="category-btn" data-category="{{ cat.name }}">{{ cat.display_name }}</button>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Gallery -->
+        <div class="gallery-grid" id="galleryGrid">
+            {% for item in library_items %}
+            <div class="prompt-card" data-category="{{ item.category }}" data-title="{{ item.title|lower }}" data-keywords="{{ item.prompt_text|lower }}">
+                <div class="image-wrapper">
+                    <span class="card-category">{{ item.category }}</span>
+                    <img src="{{ item.image_url }}" alt="{{ item.title }}" loading="lazy" onerror="this.style.display='none';this.parentElement.innerHTML+='<div style=display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-faint)><i class=bi bi-image style=font-size:40px></i></div>'">
+                    <div class="image-overlay"></div>
+                    <div class="image-title">{{ item.title }}</div>
+                </div>
+                <div class="card-actions">
+                    <button class="copy-btn" data-prompt="{{ item.prompt_text }}" onclick="handleCopy(event)"><i class="bi bi-files"></i> نسخ</button>
+                    <button class="like-btn" data-id="{{ item.id }}" onclick="toggleLike(event)"><i class="bi bi-heart"></i> <span class="like-count">0</span></button>
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="bi bi-collection"></i>
+                <p>لا توجد برومبتات في المكتبة حالياً</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"><i class="bi bi-check-lg"></i> تم النسخ!</div>
+
+    <!-- Ad Overlay -->
+    <div class="ad-overlay" id="adOverlay">
+        <div class="ad-box">
+            <div id="adImageContainer">
+                <div class="ad-no-image" id="adNoImage"><i class="bi bi-megaphone-fill"></i></div>
+            </div>
+            <div class="ad-content">
+                <div class="ad-title" id="adTitle">إعلان</div>
+                <div class="ad-text" id="adText">...</div>
+                <a href="#" target="_blank" class="ad-btn" id="adBtn"><i class="bi bi-box-arrow-up-right"></i> <span id="adBtnText">زيارة</span></a>
+            </div>
+            <div class="ad-timer" id="adTimer">5</div>
+        </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <nav class="bottom-nav-bar">
+        <a href="/" class="nav-item active"><i class="bi bi-house-door-fill"></i><span class="nav-label">الرئيسية</span></a>
+        <a href="/chat" class="nav-item"><i class="bi bi-chat-dots"></i><span class="nav-label">المحادثة</span></a>
+        <a href="/upload" class="nav-item"><i class="bi bi-cloud-upload"></i><span class="nav-label">المساهمة</span></a>
+    </nav>
+
+    <script>
+        // ---------- Like system (cookies) ----------
+        function getLikes() {
+            try {
+                const data = document.cookie.split('; ').find(row => row.startsWith('ufoq_likes='));
+                return data ? JSON.parse(decodeURIComponent(data.split('=')[1])) : {};
+            } catch { return {}; }
+        }
+        function setLikes(likes) {
+            document.cookie = `ufoq_likes=${encodeURIComponent(JSON.stringify(likes))}; path=/; max-age=31536000`;
+        }
+
+        function toggleLike(e) {
+            e.stopPropagation();
+            const btn = e.currentTarget;
+            const id = btn.dataset.id;
+            const span = btn.querySelector('.like-count');
+            const icon = btn.querySelector('i');
+            let likes = getLikes();
+            const count = parseInt(span.textContent) || 0;
+            if (likes[id]) {
+                delete likes[id];
+                span.textContent = Math.max(0, count - 1);
+                btn.classList.remove('liked');
+                icon.className = 'bi bi-heart';
+            } else {
+                likes[id] = true;
+                span.textContent = count + 1;
+                btn.classList.add('liked');
+                icon.className = 'bi bi-heart-fill';
+            }
+            setLikes(likes);
+        }
+
+        function initLikes() {
+            const likes = getLikes();
+            document.querySelectorAll('.like-btn').forEach(btn => {
+                const id = btn.dataset.id;
+                const span = btn.querySelector('.like-count');
+                if (likes[id]) {
+                    btn.classList.add('liked');
+                    btn.querySelector('i').className = 'bi bi-heart-fill';
+                    span.textContent = (parseInt(span.textContent) || 0) + 1;
+                }
+            });
+        }
+
+        // ---------- Copy with ad ----------
+        let pendingCopyText = null;
+        let adTimerInterval = null;
+
+        function handleCopy(e) {
+            const btn = e.currentTarget;
+            const text = btn.dataset.prompt;
+            if (!text) return;
+
+            const activeAd = {{ active_ad|tojson|default('null') }};
+            if (activeAd && activeAd.id) {
+                pendingCopyText = text;
+                showAdPopup(activeAd);
+            } else {
+                doCopy(text, btn);
+            }
+        }
+
+        function showAdPopup(ad) {
+            const overlay = document.getElementById('adOverlay');
+            const timerEl = document.getElementById('adTimer');
+            const btnText = document.getElementById('adBtnText');
+            const titleEl = document.getElementById('adTitle');
+            const textEl = document.getElementById('adText');
+            const btnLink = document.getElementById('adBtn');
+            const imgContainer = document.getElementById('adImageContainer');
+
+            titleEl.textContent = ad.title || 'إعلان';
+            textEl.textContent = ad.text || '';
+            btnLink.href = ad.button_link || '#';
+            btnText.textContent = ad.button_text || 'زيارة';
+
+            if (ad.image_url) {
+                imgContainer.innerHTML = `<img src="${ad.image_url}" alt="Ad" class="ad-image">`;
+            } else {
+                imgContainer.innerHTML = `<div class="ad-no-image"><i class="bi bi-megaphone-fill"></i></div>`;
+            }
+
+            let seconds = ad.duration_seconds || 5;
+            timerEl.textContent = seconds;
+            btnText.textContent = `${ad.button_text || 'زيارة'} (${seconds})`;
+            overlay.classList.add('show');
+
+            adTimerInterval = setInterval(() => {
+                seconds--;
+                timerEl.textContent = seconds;
+                btnText.textContent = `${ad.button_text || 'زيارة'} (${seconds})`;
+                if (seconds <= 0) {
+                    clearInterval(adTimerInterval);
+                    timerEl.style.display = 'none';
+                    btnText.textContent = ad.button_text || 'زيارة';
+                    closeAdPopup();
+                    if (pendingCopyText) {
+                        const btn = document.querySelector(`[data-prompt="${pendingCopyText.replace(/"/g, '\\"')}"]`);
+                        doCopy(pendingCopyText, btn);
+                        pendingCopyText = null;
+                    }
+                }
+            }, 1000);
+        }
+
+        function closeAdPopup() {
+            document.getElementById('adOverlay').classList.remove('show');
+            if (adTimerInterval) clearInterval(adTimerInterval);
+        }
+
+        function doCopy(text, btn) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast('تم نسخ البرومبت!');
+                    if (btn) markCopied(btn);
+                }).catch(() => fallbackCopy(text, btn));
+            } else {
+                fallbackCopy(text, btn);
+            }
+        }
+
+        function fallbackCopy(text, btn) {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed'; ta.style.opacity = '0';
+            document.body.appendChild(ta); ta.select();
+            document.execCommand('copy'); document.body.removeChild(ta);
+            showToast('تم نسخ البرومبت!');
+            if (btn) markCopied(btn);
+        }
+
+        function markCopied(btn) {
+            const orig = btn.innerHTML;
+            btn.classList.add('copied');
+            btn.innerHTML = '<i class="bi bi-check-lg"></i> تم النسخ!';
+            setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = orig; }, 2000);
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerHTML = `<i class="bi bi-check-lg"></i> ${msg}`;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2500);
+        }
+
+        // ---------- Filtering & Search ----------
+        function filterPrompts() {
+            const searchVal = document.getElementById('searchInput').value.toLowerCase().trim();
+            const activeCategory = document.querySelector('.category-btn.active')?.dataset.category || 'all';
+            const cards = document.querySelectorAll('.prompt-card');
+            let visible = 0;
+            cards.forEach(card => {
+                const cat = card.dataset.category;
+                const title = card.dataset.title || '';
+                const keywords = card.dataset.keywords || '';
+                const matchCategory = (activeCategory === 'all' || cat === activeCategory);
+                const matchSearch = title.includes(searchVal) || keywords.includes(searchVal);
+                if (matchCategory && matchSearch) {
+                    card.style.display = 'flex';
+                    visible++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            const empty = document.querySelector('.empty-state');
+            if (empty) {
+                if (visible === 0 && cards.length > 0) {
+                    empty.style.display = 'block';
+                    empty.querySelector('p').textContent = 'لا توجد برومبتات تطابق بحثك';
+                } else {
+                    empty.style.display = 'none';
+                }
+            }
+        }
+
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                filterPrompts();
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', initLikes);
+    </script>
+</body>
+</html>
