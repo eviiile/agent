@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم – UFOQ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        :root {
+            --bg: #f8fafc;
+            --bg-card: #ffffff;
+            --border: rgba(0,0,0,0.08);
+            --text: #1e293b;
+            --text-dim: #475569;
+            --text-faint: #94a3b8;
+            --primary: #0ea5e9;
+            --primary-dim: rgba(14,165,233,0.08);
+            --primary-dark: #0284c7;
+            --shadow: 0 4px 20px rgba(0,0,0,0.06);
+            --danger: #ef4444;
+            --danger-bg: rgba(239,68,68,0.08);
+            --warning: #f59e0b;
+            --warning-bg: rgba(245,158,11,0.08);
+            --success: #10b981;
+            --success-bg: rgba(16,185,129,0.08);
+        }
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
+        }
+        .section-title {
+            font-size: 1.1rem; font-weight: 800; margin-bottom: 16px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .section-title i { color: var(--primary); }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
+        .form-group { margin-bottom: 10px; }
+        .form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-dim); margin-bottom: 4px; }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%; padding: 10px 14px;
+            background: #f1f5f9; border: 1px solid var(--border);
+            border-radius: 8px; color: var(--text); font-family: 'Tajawal', sans-serif;
+            font-size: 0.85rem; outline: none;
+        }
+        .form-group input:focus, .form-group textarea:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px var(--primary-dim); }
+        .btn {
+            padding: 8px 16px; border-radius: 8px; border: none;
+            font-weight: 700; cursor: pointer; transition: 0.2s;
+            display: inline-flex; align-items: center; gap: 6px;
+            font-family: 'Tajawal', sans-serif; font-size: 0.8rem;
+            text-decoration: none;
+        }
+        .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 2px 6px rgba(14,165,233,0.25); }
+        .btn-primary:hover { background: var(--primary-dark); }
+        .btn-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid rgba(239,68,68,0.2); }
+        .btn-warning { background: var(--warning-bg); color: var(--warning); border: 1px solid rgba(245,158,11,0.2); }
+        .btn-success { background: var(--success-bg); color: var(--success); border: 1px solid rgba(16,185,129,0.2); }
+        .btn:hover { transform: translateY(-1px); opacity: 0.9; }
+        .item-card {
+            background: #f8fafc; border: 1px solid var(--border);
+            border-radius: 12px; padding: 14px; margin-bottom: 10px;
+            display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+        }
+        .item-card .info { flex: 1; }
+        .item-card .info .title { font-weight: 700; font-size: 0.9rem; }
+        .item-card .info .meta { font-size: 0.75rem; color: var(--text-dim); }
+        .item-card .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .status-badge {
+            display: inline-block; padding: 2px 10px; border-radius: 6px;
+            font-size: 0.7rem; font-weight: 700;
+        }
+        .status-pending { background: var(--warning-bg); color: var(--warning); }
+        .status-approved { background: var(--success-bg); color: var(--success); }
+        .status-rejected { background: var(--danger-bg); color: var(--danger); }
+        .model-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700;
+        }
+        .model-badge.rewriter { background: rgba(168,85,247,0.1); color: #a855f7; }
+        .model-badge.standard { background: var(--primary-dim); color: var(--primary-dark); }
+        .color-preview {
+            width: 24px; height: 24px; border-radius: 6px; border: 1px solid var(--border);
+            display: inline-block; vertical-align: middle; margin-right: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% if session.get('logged_in') %}
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2 style="font-size:22px; font-weight:900;"><i class="bi bi-shield-lock" style="color:var(--primary);"></i> لوحة التحكم</h2>
+                <a href="/admin/logout" class="btn btn-danger">تسجيل الخروج</a>
+            </div>
+
+            <!-- Tabs -->
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;">
+                <button class="btn btn-primary" onclick="showTab('categories')">التصنيفات</button>
+                <button class="btn btn-primary" onclick="showTab('library')">المكتبة</button>
+                <button class="btn btn-primary" onclick="showTab('contributions')">المساهمات</button>
+                <button class="btn btn-primary" onclick="showTab('ads')">الإعلانات</button>
+                <button class="btn btn-primary" onclick="showTab('ai_models')">نماذج الذكاء</button>
+                <button class="btn btn-primary" onclick="showTab('settings')">إعدادات الموقع</button>
+            </div>
+
+            <!-- Categories -->
+            <div id="tab-categories" class="tab-content active card">
+                <div class="section-title"><i class="bi bi-tags"></i> إدارة التصنيفات</div>
+                <form method="POST" action="/admin/category/add" style="margin-bottom:20px;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <div class="form-grid">
+                        <div class="form-group"><label>المعرف (بالإنجليزية)</label><input type="text" name="name" required></div>
+                        <div class="form-group"><label>اسم العرض</label><input type="text" name="display_name" required></div>
+                        <div class="form-group"><label>الأيقونة</label><input type="text" name="icon" value="bi-tag"></div>
+                        <div class="form-group"><label>الترتيب</label><input type="number" name="sort_order" value="0"></div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="margin-top:10px;"><i class="bi bi-plus-lg"></i> إضافة تصنيف</button>
+                </form>
+
+                <div>
+                    {% for cat in categories %}
+                    <div class="item-card">
+                        <div class="info">
+                            <div class="title">{{ cat.display_name }} <span style="font-weight:400; color:var(--text-dim);">({{ cat.name }})</span></div>
+                            <div class="meta">ترتيب: {{ cat.sort_order }} | أيقونة: {{ cat.icon }}</div>
+                        </div>
+                        <div class="actions">
+                            <form method="POST" action="/admin/category/{{ cat.id }}/delete" onsubmit="return confirm('حذف التصنيف؟')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit" class="btn btn-danger"><i class="bi bi-trash3"></i></button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Library -->
+            <div id="tab-library" class="tab-content card">
+                <div class="section-title"><i class="bi bi-collection"></i> إدارة المكتبة</div>
+                <form method="POST" action="/admin/library/add">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <div class="form-grid">
+                        <div class="form-group"><label>العنوان</label><input type="text" name="title" required></div>
+                        <div class="form-group"><label>التصنيف</label>
+                            <select name="category">
+                                {% for cat in categories %}<option value="{{ cat.name }}">{{ cat.display_name }}</option>{% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group"><label>رابط الصورة</label><input type="url" name="image_url" required></div>
+                        <div class="form-group" style="grid-column:1/-1;"><label>نص البرومبت</label><textarea name="prompt_text" required rows="4"></textarea></div>
+                        <div class="form-group"><label>الناشر</label><input type="text" name="publisher" placeholder="اختياري"></div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="margin-top:10px;"><i class="bi bi-plus-lg"></i> إضافة برومبت</button>
+                </form>
+
+                <div style="margin-top:24px;">
+                    {% for item in library_items %}
+                    <div class="item-card">
+                        <div class="info">
+                            <div class="title">{{ item.title }}</div>
+                            <div class="meta">تصنيف: {{ item.category }}{% if item.publisher %} | ناشر: {{ item.publisher }}{% endif %}</div>
+                        </div>
+                        <div class="actions">
+                            <form method="POST" action="/admin/library/{{ item.id }}/delete" onsubmit="return confirm('حذف البرومبت؟')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit" class="btn btn-danger"><i class="bi bi-trash3"></i></button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Contributions -->
+            <div id="tab-contributions" class="tab-content card">
+                <div class="section-title"><i class="bi bi-inbox"></i> مساهمات المستخدمين</div>
+                <div>
+                    {% for contrib in contributions %}
+                    <div class="item-card">
+                        <div class="info">
+                            <div class="title">{{ contrib.title }} <span class="status-badge status-{{ contrib.status }}">{{ contrib.status }}</span></div>
+                            <div class="meta">تصنيف: {{ contrib.category }} | تاريخ: {{ contrib.created_at.strftime('%Y-%m-%d') if contrib.created_at else '—' }}{% if contrib.publisher_name %} | من: {{ contrib.publisher_name }}{% endif %}</div>
+                            <div style="margin-top:6px; font-size:0.8rem; color:var(--text-dim); background:#f1f5f9; padding:8px; border-radius:6px;">{{ contrib.prompt_text[:120] }}{% if contrib.prompt_text|length > 120 %}...{% endif %}</div>
+                        </div>
+                        <div class="actions">
+                            {% if contrib.status == 'pending' %}
+                            <form method="POST" action="/admin/contribution/{{ contrib.id }}/approve">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit" class="btn btn-success"><i class="bi bi-check-lg"></i> موافقة</button>
+                            </form>
+                            <form method="POST" action="/admin/contribution/{{ contrib.id }}/reject">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit" class="btn btn-warning"><i class="bi bi-x-lg"></i> رفض</button>
+                            </form>
+                            {% endif %}
+                            <form method="POST" action="/admin/contribution/{{ contrib.id }}/delete" onsubmit="return confirm('حذف المساهمة؟')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit" class="btn btn-danger"><i class="bi bi-trash3"></i></button>
+                            </form>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p style="color:var(--text-faint); text-align:center; padding:20px;">لا توجد مساهمات حالياً</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Ads -->
+            <div id="tab-ads" class="tab-content card">
+                <div class="section-title"><i class="bi bi-badge-ad"></i> إدارة الإعلانات</div>
+                <form method="POST" action="/admin/library_ad/add">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <div class="form-grid">
+                        <div class="form-group"><label>العنوان</label><input type="text" name="title" required></div>
+                        <div class="form-group"><label>النص</label><textarea name="text" required></textarea></div>
+                        <div class="form-group"><label>رابط الصورة (اختياري)</label><input type="url" name="image_url"></div>
+                        <div class="form-group"><label>نص الزر</label><input type="text" name="button_text" value="زيارة"></div>
+                        <div class="form-group"><label>رابط الزر</label><input type="url" name="button_link" required></div>
+                        <div class="form-group"><label>المدة (ثانية)</label><input type="number" name="duration_seconds" value="5"></div>
+                        <div class="form-group"><label><input type="checkbox" name="is_active" checked> نشط</label></div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="margin-top:10px;"><i class="bi bi-plus-lg"></i> إضافة إعلان</button>
+                </form>
+
+                <div style="margin-top:24px;">
+                    {% for ad in library_ads %}
+                    <div class="item-card">
+                        <div class="info">
+                            <div class="title">{{ ad.title }} <span class="status-badge" style="background:{% if ad.is_active %}var(--success-bg){% else %}var(--danger-bg){% endif %}; color:{% if ad.is_active %}var(--success){% else %}var(--danger){% endif %};">{{ 'نشط' if ad.is_active else 'معطل' }}</span></div>
+                            <div class="meta">{{ ad.duration_seconds }} ثانية</div>
+                        </div>
+                        <div class="actions">
+                            <form method="POST" action="/admin/library_ad/{{ ad.id }}/toggle">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit" class="btn btn-warning"><i class="bi bi-toggle-on"></i></button>
+                            </form>
+                            <form method="POST" action="/admin/library_ad/{{ ad.id }}/delete" onsubmit="return confirm('حذف الإعلان؟')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit" class="btn btn-danger"><i class="bi bi-trash3"></i></button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- AI Models -->
+            <div id="tab-ai_models" class="tab-content card">
+                <div class="section-title"><i class="bi bi-cpu"></i> إدارة نماذج الذكاء الاصطناعي</div>
+                <form method="POST" action="/admin/ai_model/add" style="margin-bottom:20px;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                    <div class="form-grid">
+                        <div class="form-group"><label>اسم النموذج (العرضي)</label><input type="text" name="name" placeholder="مثال: GPT-4o" required></div>
+                        <div class="form-group"><label>معرف النموذج (API)</label><input type="text" name="model_id" placeholder="مثال: openai/gpt-4o" required></div>
+                        <div class="form-group"><label>المزود</label><input type="text" name="provider" placeholder="مثال: openai" required></div>
+                        <div class="form-group"><label>الأيقونة (Bootstrap)</label><input type="text" name="icon" value="bi-cpu"></div>
+                        <div class="form-group"><label>لون الخلفية</label><input type="text" name="color" value="rgba(14,165,233,0.08)"></div>
+                        <div class="form-group"><label>لون النص</label><input type="text" name="text_color" value="#0ea5e9"></div>
+                        <div class="form-group"><label>الترتيب</label><input type="number" name="sort_order" value="0"></div>
+                        <div class="form-group" style="grid-column:1/-1;"><label>الوصف (يظهر للمستخدم)</label><textarea name="description" rows="3" placeholder="اشرح مهمة هذا النموذج بالتفصيل..." required></textarea></div>
+                        <div class="form-group">
+                            <label><input type="checkbox" name="is_active" checked> نشط</label>
+                        </div>
+                        <div class="form-group">
+                            <label><input type="checkbox" name="is_rewriter"> نموذج إعادة صياغة (مثل Grok)</label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="margin-top:10px;"><i class="bi bi-plus-lg"></i> إضافة نموذج</button>
+                </form>
+
+                <div style="margin-top:24px;">
+                    {% for model in ai_models %}
+                    <div class="item-card">
+                        <div class="info">
+                            <div class="title">
+                                <i class="bi {{ model.icon }}" style="color:{{ model.text_color }}; margin-left:6px;"></i>
+                                {{ model.name }}
+                                <span class="model-badge {{ 'rewriter' if model.is_rewriter else 'standard' }}">
+                                    {{ 'إعادة صياغة' if model.is_rewriter else 'قياسي' }}
+                                </span>
+                                <span class="status-badge" style="background:{% if model.is_active %}var(--success-bg){% else %}var(--danger-bg){% endif %}; color:{% if model.is_active %}var(--success){% else %}var(--danger){% endif %};">
+                                    {{ 'نشط' if model.is_active else 'معطل' }}
+                                </span>
+                            </div>
+                            <div class="meta">
+                                <span class="color-preview" style="background:{{ model.color }};"></span>
+                                {{ model.model_id }} | {{ model.provider }} | ترتيب: {{ model.sort_order }}
+                            </div>
+                            <div style="margin-top:6px; font-size:0.8rem; color:var(--text-dim); background:#f1f5f9; padding:8px; border-radius:6px;">
+                                {{ model.description }}
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <form method="POST" action="/admin/ai_model/{{ model.id }}/toggle">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit" class="btn btn-warning"><i class="bi bi-toggle-on"></i></button>
+                            </form>
+                            <form method="POST" action="/admin/ai_model/{{ model.id }}/delete" onsubmit="return confirm('حذف النموذج {{ model.name }}؟')">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+                                <button type="submit" class="btn btn-danger"><i class="bi bi-trash3"></i></button>
+                            </form>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p style="color:var(--text-faint); text-align:center; padding:20px;">لا توجد نماذج مضافة</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Site Settings -->
+            <div id="tab-settings" class="tab-content card">
+                <div class="section-title"><i class="bi bi-power"></i> إعدادات الموقع</div>
+                <div style="display:flex; flex-direction:column; gap:16px; max-width:400px;">
+                    <div>
+                        <label style="display:block; font-weight:700; font-size:0.85rem; margin-bottom:4px;">حالة الموقع</label>
+                        <select id="siteStatusSelect" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:#f1f5f9; font-family:'Tajawal',sans-serif;">
+                            <option value="on" {% if site_settings and site_settings.status=='on' %}selected{% endif %}>مفعل</option>
+                            <option value="off" {% if site_settings and site_settings.status=='off' %}selected{% endif %}>متوقف</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display:block; font-weight:700; font-size:0.85rem; margin-bottom:4px;">رسالة التوقف</label>
+                        <textarea id="offlineMsg" rows="3" style="width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:#f1f5f9; font-family:'Tajawal',sans-serif;">{{ site_settings.offline_message if site_settings else 'الموقع تحت الصيانة' }}</textarea>
+                    </div>
+                    <button class="btn btn-primary" onclick="saveSiteSettings()" style="width:fit-content;"><i class="bi bi-floppy"></i> حفظ</button>
+                </div>
+            </div>
+
+        {% else %}
+            <!-- Login -->
+            <div style="max-width:400px; margin:40px auto; text-align:center;">
+                <div class="card">
+                    <h2 style="margin-bottom:20px; font-weight:900;">لوحة التحكم</h2>
+                    <form method="POST" action="/admin">
+                        <div class="form-group">
+                            <label>كلمة المرور</label>
+                            <input type="password" name="password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width:100%; margin-top:10px;">دخول</button>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        function showTab(id) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-'+id).classList.add('active');
+        }
+
+        async function saveSiteSettings() {
+            const status = document.getElementById('siteStatusSelect').value;
+            const msg = document.getElementById('offlineMsg').value;
+            try {
+                const res = await fetch('/api/admin/update_site_settings', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ status, offline_message: msg, csrf_token: '{{ csrf_token }}' })
+                });
+                const data = await res.json();
+                if (data.success) alert('تم حفظ الإعدادات');
+                else alert('خطأ');
+            } catch(e) { alert('خطأ في الاتصال'); }
+        }
+    </script>
+</body>
+</html>
